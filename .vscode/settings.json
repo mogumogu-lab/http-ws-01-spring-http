@@ -1,6 +1,5 @@
 {
      "editor.formatOnSave": true,
-     "java.project.sourcePaths": ["src/main/java"],
      "java.jdt.ls.java.home": "/usr/lib/jvm/java-21-openjdk-amd64",
      "java.configuration.updateBuildConfiguration": "disabled",
      "java.import.gradle.version": "8.14.3",
