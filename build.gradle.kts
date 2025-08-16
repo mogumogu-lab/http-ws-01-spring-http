@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
-    runtimeOnly("org.springframework.boot:spring-boot-devtools") // hot restart
+    developmentOnly("org.springframework.boot:spring-boot-devtools") // hot restart
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

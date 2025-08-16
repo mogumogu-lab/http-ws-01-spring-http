@@ -17,7 +17,7 @@ services:
   dev:
     image: gradle:8.14.3-jdk21-ubi
     working_dir: /src
-    command: bash -lc "./gradlew --no-daemon bootRun -t"
+    command: bash -lc "./gradlew --no-daemon -t classes & ./gradlew --no-daemon bootRun"
     ports:
       - "8080:8080"
     environment:
