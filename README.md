@@ -226,7 +226,6 @@ Using `Wireshark`, you can capture and analyze network traffic in real-time. In 
   - **PSH (Push)**: Request immediate delivery of data to the application (bypass buffering).
   - **URG (Urgent)**: Marks data as urgent (rarely used in modern systems).
 
-
 ### Socket states (ss)
 
 The `ss` command shows the current state of TCP sockets inside the Linux kernel. It provides a snapshot view of whether a socket is in `LISTEN`, `ESTABLISHED`, `TIME-WAIT`, `CLOSE-WAIT`, etc., and it also displays how many bytes are sitting in the receive queue (data arrived but not yet read by the application) and the send queue (data sent but not yet acknowledged by the peer). This is useful to quickly see if traffic is piling up in the kernel before the application consumes or acknowledges it.
@@ -261,9 +260,7 @@ ESTAB                   0                        0                              
 	 cubic wscale:7,7 rto:202 rtt:0.012/0.006 mss:32732 pmtu:65536 rcvmss:536 advmss:65464 cwnd:10 bytes_acked:1 segs_out:4 segs_in:3 send 218213333333bps lastsnd:30990 lastrcv:30990 lastack:30990 pacing_rate 436426666664bps delivered:1 app_limited rcv_space:65476 rcv_ssthresh:65476 minrtt:0.012 snd_wnd:65464
 ```
 
-### Tomcat NIO
-
-### Syscall timeline (strace/perf)
+### Tomcat NIO (Syscall timeline)
 
 Tracing tools such as `strace` or `perf trace` capture the sequence of system calls that a process makes to the kernel. This produces a timeline view: the process blocks in `epoll_wait`, wakes up, then calls `accept4` to create a new socket, `read` to consume request bytes, and `write` to send back a response. Unlike `ss`, which is a point-in-time snapshot, syscall tracing reveals exactly when and in what order the application interacts with the kernel.
 
@@ -311,7 +308,72 @@ sudo nsenter -t "$PID" -p -n -u -- \
 
 ### Spring MVC
 
-### Response
+- Setting for logging (Spring Boot)
+
+```yaml
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+  level:
+    # Tomcat Connector (NIO)
+    org.apache.tomcat.util.net: TRACE
+    org.apache.tomcat.util.net.NioEndpoint: TRACE
+    org.apache.tomcat.util.net.AbstractEndpoint: DEBUG
+    org.apache.tomcat.util.net.SocketProcessorBase: DEBUG
+
+    # Tomcat connector (Coyote)
+    org.apache.coyote: DEBUG
+    org.apache.coyote.http11.Http11Processor: DEBUG
+    org.apache.catalina.connector.CoyoteAdapter: DEBUG  
+
+    # Servlet Container
+    org.apache.catalina: DEBUG
+    org.apache.catalina.core: DEBUG
+
+    # Spring MVC front controller & mappings
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter: DEBUG
+```
+
+- Setting for Logging (Tomcat)
+
+
+- Result
+
+```sh
+# Tomcat Connector (NIO)
+dev-1  | 15:26:58.174 [http-nio-8080-Poller] DEBUG o.apache.tomcat.util.net.NioEndpoint - timeout completed: keys processed=0; now=1755358018174; nextExpiration=1755358018173; keyCount=0; hasEvents=false; eval=false
+dev-1  | 15:26:58.889 [http-nio-8080-exec-1] DEBUG o.a.t.util.net.SocketWrapperBase - Socket: [org.apache.tomcat.util.net.NioEndpoint$NioSocketWrapper@3c9d0ea4:org.apache.tomcat.util.net.NioChannel@325af747:java.nio.channels.SocketChannel[connected local=/172.22.0.2:8080 remote=/172.22.0.1:41436]], Read from buffer: [0]
+dev-1  | 15:26:58.889 [http-nio-8080-exec-1] DEBUG o.apache.tomcat.util.net.NioEndpoint - Socket: [org.apache.tomcat.util.net.NioEndpoint$NioSocketWrapper@3c9d0ea4:org.apache.tomcat.util.net.NioChannel@325af747:java.nio.channels.SocketChannel[connected local=/172.22.0.2:8080 remote=/172.22.0.1:41436]], Read direct from socket: [769]
+dev-1  | 15:26:58.889 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+dev-1  | 15:26:58.889 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+dev-1  | 15:26:58.890 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+dev-1  | 15:26:58.892 [http-nio-8080-exec-1] INFO  com.example.web.LoggingFilter - [Filter:BEGIN] rid=663d60dc-eab3-4e32-9a72-17a6a4eebc29 method=GET uri=/api/http
+dev-1  | 15:26:58.896 [http-nio-8080-exec-1] INFO  com.example.web.LoggingFilter - [Filter:END]   rid=663d60dc-eab3-4e32-9a72-17a6a4eebc29 status=200 tookMs=4
+dev-1  | 15:26:58.896 [http-nio-8080-exec-1] DEBUG o.a.t.util.net.SocketWrapperBase - Socket: [org.apache.tomcat.util.net.NioEndpoint$NioSocketWrapper@3c9d0ea4:org.apache.tomcat.util.net.NioChannel@325af747:java.nio.channels.SocketChannel[connected local=/172.22.0.2:8080 remote=/172.22.0.1:41436]], Read from buffer: [0]
+dev-1  | 15:26:58.896 [http-nio-8080-exec-1] DEBUG o.apache.tomcat.util.net.NioEndpoint - Socket: [org.apache.tomcat.util.net.NioEndpoint$NioSocketWrapper@3c9d0ea4:org.apache.tomcat.util.net.NioChannel@325af747:java.nio.channels.SocketChannel[connected local=/172.22.0.2:8080 remote=/172.22.0.1:41436]], Read direct from socket: [0]
+dev-1  | 15:26:58.896 [http-nio-8080-exec-1] DEBUG o.apache.tomcat.util.net.NioEndpoint - Registered read interest for [org.apache.tomcat.util.net.NioEndpoint$NioSocketWrapper@3c9d0ea4:org.apache.tomcat.util.net.NioChannel@325af747:java.nio.channels.SocketChannel[connected local=/172.22.0.2:8080 remote=/172.22.0.1:41436]]
+dev-1  | 15:26:59.897 [http-nio-8080-Poller] DEBUG o.apache.tomcat.util.net.NioEndpoint - timeout completed: keys processed=2; now=1755358019897; nextExpiration=1755358019174; keyCount=0; hasEvents=false; eval=false
+dev-1  | 15:27:00.898 [http-nio-8080-Poller] DEBUG o.apache.tomcat.util.net.NioEndpoint - timeout completed: keys processed=2; now=1755358020898; nextExpiration=1755358020897; keyCount=0; hasEvents=false; eval=false
+
+# Tomcat connector (Coyote)
+dev-1  | 15:18:33.522 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+dev-1  | 15:18:33.522 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+dev-1  | 15:18:33.522 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+dev-1  | 15:18:33.523 [http-nio-8080-exec-1] INFO  com.example.web.LoggingFilter - [Filter:BEGIN] rid=8455677c-4ecb-4752-b063-b7c9ee91e84f method=GET uri=/api/http
+dev-1  | 15:18:33.526 [http-nio-8080-exec-1] INFO  com.example.web.LoggingFilter - [Filter:END]   rid=8455677c-4ecb-4752-b063-b7c9ee91e84f status=200 tookMs=2
+
+# Servlet Container
+dev-1  | 15:27:58.955 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+dev-1  | 15:27:58.955 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+dev-1  | 15:27:58.955 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+dev-1  | 15:27:58.957 [http-nio-8080-exec-1] INFO  com.example.web.LoggingFilter - [Filter:BEGIN] rid=07a0e1f9-de58-4b26-83b9-24a13ac67da5 method=GET uri=/api/http
+dev-1  | 15:27:58.959 [http-nio-8080-exec-1] INFO  com.example.web.LoggingFilter - [Filter:END]   rid=07a0e1f9-de58-4b26-83b9-24a13ac67da5 status=200 tookMs=3
+```
+
+
 
 ### JVM
 
