@@ -1,0 +1,23 @@
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 200      # connector maxThreads
+      min-spare: 10
+    accept-count: 100
+    basedir: /tmp/tomcat
+    accesslog:
+      enabled: true
+      directory: logs
+      pattern: '%h %l %u %t "%r" %s %b %D' # %D: time in ms
+      prefix: access
+      suffix: .log
+logging:
+  level:
+    root: INFO
+    org.apache.catalina.core: INFO
+    org.apache.coyote: INFO
+    org.apache.tomcat.util.net: INFO
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter: DEBUG
