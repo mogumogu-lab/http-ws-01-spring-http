@@ -1,7 +1,9 @@
 {
+     "editor.formatOnSave": true,
      "java.jdt.ls.java.home": "/usr/lib/jvm/java-21-openjdk-amd64",
      "java.configuration.updateBuildConfiguration": "disabled",
      "java.import.gradle.version": "8.14.3",
-     "java.import.gradle.wrapper.enabled": false,
-     "java.import.gradle.enabled": false
+     "java.import.gradle.wrapper.enabled": true,
+     "java.import.gradle.enabled": false,
+     "java.compile.nullAnalysis.mode": "automatic"
 }
