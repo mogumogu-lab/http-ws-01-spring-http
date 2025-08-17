@@ -1,0 +1,47 @@
+{
+  "name": "http-ws-01-spring-http (dev)",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "dev",
+  "workspaceFolder": "/src",
+  
+  "runServices": ["dev"],
+  "overrideCommand": true,
+
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "Spring Boot" }
+  },
+
+  // 컨테이너 안에서 최초 1회 실행할 명령들
+  "postCreateCommand": "chmod +x ./gradlew && ./gradlew -v",
+
+  // VS Code 확장/설정
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "richardwillis.vscode-gradle",
+        "vmware.vscode-boot-dev-pack",
+        "github.vscode-pull-request-github"
+      ],
+      "settings": {
+        "java.jdt.ls.java.home": "",
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.import.gradle.enabled": true,
+        "java.import.gradle.wrapper.enabled": true,
+        "java.import.gradle.version": "",
+        "java.compile.nullAnalysis.mode": "automatic"
+      }
+    }
+  },
+
+  "containerEnv": {
+    "JAVA_TOOL_OPTIONS": "-Xms256m -Xmx512m -XX:+UseG1GC"
+  },
+
+  // Gradle 캐시/빌드 캐시 볼륨 사용으로 속도 개선
+  "mounts": [
+    "source=gradle-cache,target=/home/vscode/.gradle,type=volume",
+    "source=gradle-caches,target=/home/vscode/.cache/gradle,type=volume"
+  ]
+}
