@@ -15,17 +15,12 @@ services:
       - app_logs:/tmp
 
   dev:
-    image: gradle:8.14.3-jdk21-ubi
+    image: eclipse-temurin:24.0.2_12-jdk
     working_dir: /src
-    command: bash -lc "./gradlew --no-daemon -t classes & ./gradlew --no-daemon bootRun"
     expose:
       - "8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      JAVA_TOOL_OPTIONS: >
-        -Xms256m -Xmx256m
-        -XX:+UseG1GC
-        -Xlog:gc*,safepoint=info:file=/tmp/jvm-dev.log:time,uptime,level,tags
       GRADLE_USER_HOME: /home/gradle/.gradle 
       HOME: /home/gradle
     volumes:

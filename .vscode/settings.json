@@ -2,7 +2,6 @@
      "editor.formatOnSave": true,
      "java.jdt.ls.java.home": "",
      "java.configuration.updateBuildConfiguration": "disabled",
-     "java.import.gradle.version": "8.14.3",
      "java.import.gradle.wrapper.enabled": true,
      "java.import.gradle.enabled": false,
      "java.compile.nullAnalysis.mode": "automatic"

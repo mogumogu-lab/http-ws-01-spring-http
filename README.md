@@ -1,4 +1,12 @@
-# Spring Framework HTTP Test
+# Spring Framework WS
+
+## Commands
+
+### Start
+
+```sh
+./gradlew --no-daemon -t classes & ./gradlew --no-daemon bootRun
+```
 
 ## Flow
 
@@ -24,56 +32,54 @@ sequenceDiagram
     participant A as CoyoteAdapter
     participant V as Servlet Container<br/>(Engine→Host→Context→Wrapper)
     participant F as FilterChain
-    participant D as Spring DispatcherServlet
-    participant H as HandlerMapping/Adapter
-    participant M as Controller Method
-    participant J as HttpMessageConverter
-    participant R as ServletResponse
+    participant HSI as HandshakeInterceptor
+    participant WSF as WebSocketHandler<br/>(Spring)
+    participant S as Session
+    participant APP as Application<br/>(@ServerEndpoint / @MessageMapping)
 
-    %% Network
+    %% Network: TCP & Upgrade
     rect rgb(255,240,240)
     Note over C,K: TCP 3-way handshake
-    Note over C,K: (SYN → SYN / ACK → ACK)
-    C->>K: TCP SYN + HTTP request
+    C->>K: HTTP request (GET + Upgrade: websocket)
     K-->>T: epoll event (listen socket ready)
     end
 
-    %% Tomcat NIO
+    %% Tomcat NIO Handshake
     rect rgb(240,255,240)
-    Note over T: Acceptor accept() creates SocketChannel    T-->>T: Poller registers channel (Selector)
-    T-->>T: Worker thread parses request line/headers
-    T->>A: Creating Catalina Request/Response
-    end
-
-    %% Servlet Container
-    rect rgb(240,240,255)
+    Note over T: Acceptor accept() SocketChannel
+    T-->>T: Poller registers channel (Selector)
+    T-->>A: parse HTTP headers
     A->>V: map URI → Context/Wrapper
     V->>F: ApplicationFilterChain.doFilter()
     end
 
-    %% Spring MVC
+    %% Spring WebSocket Handshake
     rect rgb(255,255,220)
-    F->>D: DispatcherServlet.service()
-    D->>H: resolve handler (HandlerMapping)
-    H-->>D: HandlerMethod + HandlerAdapter
-    D->>M: invoke controller (@GetMapping)
-    M-->>D: return DTO/View
-    D->>J: serialize via HttpMessageConverter (JSON etc.)
+    F->>HSI: beforeHandshake()
+    HSI-->>F: allow/deny
+    F->>T: handshake success → HTTP 101 Switching Protocols
+    T-->>K: TCP connection stays open
     end
 
-    %% Response
+    %% WebSocket Session Established
     rect rgb(220,255,255)
-    J->>R: write bytes to response
-    R-->>T: flush response buffers
-    T-->>K: send via kernel TCP
-    K-->>C: HTTP response
+    T->>WSF: create WebSocketSession
+    WSF->>S: store session (id, attributes)
+    C<->>WSF: WebSocket frames (text/binary)
     end
 
-    %% JVM
+    %% Application Messaging
+    rect rgb(240,240,255)
+    WSF->>APP: handleTextMessage() / @MessageMapping
+    APP-->>WSF: response payload
+    WSF->>C: send WebSocket frame
+    end
+
+    %% JVM Runtime
     rect rgb(245,245,255)
-    Note over T: JIT compiles hot methods
-    Note over M: Objects allocated in Eden
-    Note over T: Safepoint pauses (GC, deopt)
+    Note over T: Selector waits for read/write
+    Note over S: Session holds buffers & state
+    Note over APP: Business logic invoked async
     end
 ```
 
