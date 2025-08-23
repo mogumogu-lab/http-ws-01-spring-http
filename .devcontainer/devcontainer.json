@@ -1,5 +1,5 @@
 {
-  "name": "http-ws-01-spring-http (dev)",
+  "name": "protocol-spring-servlet-ws",
   "dockerComposeFile": ["../docker-compose.yml"],
   "service": "dev",
   "workspaceFolder": "/src",
@@ -27,12 +27,14 @@
       "zxh404.vscode-proto3"
     ],
       "settings": {
-        "java.jdt.ls.java.home": "",
         "java.configuration.updateBuildConfiguration": "automatic",
         "java.import.gradle.enabled": true,
         "java.import.gradle.wrapper.enabled": true,
-        "java.import.gradle.version": "",
-        "java.compile.nullAnalysis.mode": "automatic"
+        "java.compile.nullAnalysis.mode": "automatic",
+        "java.project.sourcePaths": [
+          "src/main/java",
+          "src/test/java"
+        ]
       }
     }
   },

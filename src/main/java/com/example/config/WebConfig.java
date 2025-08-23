@@ -1,8 +1,10 @@
-package com.example.web;
+package com.example.config;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.example.filter.LoggingFilter;
 
 /**
  * Registers LoggingFilter into the servlet container so that

@@ -1,9 +1,9 @@
 server:
   port: 8080
   tomcat:
+    max-connections: 10
     threads:
-      max: 200      # connector maxThreads
-      min-spare: 10
+      max: 200
     accept-count: 100
     basedir: /tmp/tomcat
     accesslog:

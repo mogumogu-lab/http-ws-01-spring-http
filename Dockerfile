@@ -12,7 +12,7 @@ COPY src src
 RUN chmod +x gradlew && ./gradlew clean bootJar --no-daemon
 
 # ---- Run stage ----
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:24.0.2_12-jdk
 WORKDIR /app
 COPY --from=build /workspace/build/libs/app.jar /app/app.jar
 

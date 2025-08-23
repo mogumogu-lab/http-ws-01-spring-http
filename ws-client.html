@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Test</title>
+</head>
+
+<body>
+    <h1>WebSocket Test Page</h1>
+    <button id="connect">Connect</button>
+    <button id="disconnect">Disconnect</button>
+    <div id="log"
+        style="margin-top: 1em; white-space: pre; font-family: monospace; background: #f0f0f0; padding: 10px;"></div>
+
+    <script>
+        let socket;
+        const logDiv = document.getElementById("log");
+        const log = (msg) => {
+            console.log(msg);
+            logDiv.textContent += msg + "\n";
+        };
+
+        document.getElementById("connect").onclick = () => {
+            socket = new WebSocket("ws://localhost:8080/ws");
+
+            socket.onopen = () => log("✅ open");
+            socket.onmessage = (e) => log("📩 msg: " + e.data);
+            socket.onerror = (e) => log("❌ err: " + JSON.stringify(e));
+            socket.onclose = () => log("🔒 close");
+        };
+
+        document.getElementById("disconnect").onclick = () => {
+            if (socket) {
+                socket.close();
+                log("🔌 manual close");
+            }
+        };
+    </script>
+</body>
+
+</html>

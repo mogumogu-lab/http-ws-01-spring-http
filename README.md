@@ -8,6 +8,12 @@
 ./gradlew --no-daemon -t classes & ./gradlew --no-daemon bootRun
 ```
 
+### Check Thread
+
+```sh
+jcmd <PID> Thread.print | grep '^"' | awk -F'"' '{print $2}'
+```
+
 ## Flow
 
 ```mermaid
