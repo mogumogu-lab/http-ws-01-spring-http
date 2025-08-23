@@ -28,9 +28,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
         System.err.println("Error in session " + session.getId() + ": " + exception.getMessage());
     }
 
-    // @Override
-    // public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull org.springframework.web.socket.CloseStatus status) throws Exception {
-    //     // onClose에 해당
-    //     System.out.println("WebSocket closed: " + session.getId());
-    // }    
+    @Override
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull org.springframework.web.socket.CloseStatus status) throws Exception {
+        // onClose에 해당
+        System.out.println("WebSocket closed: " + session.getId());
+    }    
 }

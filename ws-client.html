@@ -8,34 +8,56 @@
 
 <body>
     <h1>WebSocket Test Page</h1>
-    <button id="connect">Connect</button>
-    <button id="disconnect">Disconnect</button>
+
+    <button id="connect-spring">Connect Spring (/ws)</button>
+    <button id="connect-legacy">Connect Legacy (/ws-old)</button>
+    <button id="disconnect-spring">Disconnect All Spring</button>
+    <button id="disconnect-legacy">Disconnect All Legacy</button>
+    <button id="disconnect-all">Disconnect All</button>
+
     <div id="log"
         style="margin-top: 1em; white-space: pre; font-family: monospace; background: #f0f0f0; padding: 10px;"></div>
 
     <script>
-        let socket;
+        const sockets = { spring: [], legacy: [] };
         const logDiv = document.getElementById("log");
         const log = (msg) => {
             console.log(msg);
             logDiv.textContent += msg + "\n";
         };
 
-        document.getElementById("connect").onclick = () => {
-            socket = new WebSocket("ws://localhost:8080/ws");
+        function connect(type, url) {
+            log(`🔗 connecting to ${url}...`);
+            const ws = new WebSocket(url);
+            sockets[type].push(ws);
 
-            socket.onopen = () => log("✅ open");
-            socket.onmessage = (e) => log("📩 msg: " + e.data);
-            socket.onerror = (e) => log("❌ err: " + JSON.stringify(e));
-            socket.onclose = () => log("🔒 close");
-        };
+            const idx = sockets[type].length; // 1-based index for readability
+            const name = `${type}#${idx}`;
 
-        document.getElementById("disconnect").onclick = () => {
-            if (socket) {
-                socket.close();
-                log("🔌 manual close");
+            ws.onopen = () => log(`✅ open (${name}, ${url})`);
+            ws.onmessage = (e) => log(`📩 msg (${name}): ${e.data}`);
+            ws.onerror = (e) => log(`❌ err (${name}): ${JSON.stringify(e)}`);
+            ws.onclose = () => log(`🔒 close (${name})`);
+        }
+
+        function disconnectAll(type) {
+            if (type) {
+                sockets[type].forEach((ws, i) => {
+                    ws.close();
+                    log(`🔌 manual close (${type}#${i + 1})`);
+                });
+                sockets[type] = [];
+            } else {
+                Object.keys(sockets).forEach(t => disconnectAll(t));
             }
-        };
+        }
+
+        // button wiring
+        document.getElementById("connect-spring").onclick = () => connect("spring", "ws://localhost:8080/ws");
+        document.getElementById("connect-legacy").onclick = () => connect("legacy", "ws://localhost:8080/ws-old");
+        document.getElementById("disconnect-spring").onclick = () => disconnectAll("spring");
+        document.getElementById("disconnect-legacy").onclick = () => disconnectAll("legacy");
+        document.getElementById("disconnect-all").onclick = () => disconnectAll();
     </script>
 </body>
 

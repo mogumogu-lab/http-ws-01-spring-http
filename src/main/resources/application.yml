@@ -1,9 +1,9 @@
 server:
   port: 8080
   tomcat:
-    max-connections: 10
+    # max-connections: 10
     threads:
-      max: 200
+      max: 10
     accept-count: 100
     basedir: /tmp/tomcat
     accesslog:
@@ -16,7 +16,8 @@ logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
-  # level:
+  level:
+      org.apache.tomcat: DEBUG
   #   # Tomcat Connector (NIO)
   #   org.apache.tomcat.util.net: TRACE
   #   org.apache.tomcat.util.net.NioEndpoint: TRACE
